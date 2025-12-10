@@ -96,6 +96,7 @@ local CommandBuilder = {
 		assert(self._classpath_file_arg, "classpath_file_arg cannot be nil")
 		assert(self._spring_property_filepaths, "_spring_property_filepaths cannot be nil")
 
+		dd(self)
 		local selectors = {}
 		for _, v in ipairs(self._test_references) do
 			if v.type == "test" then
@@ -116,6 +117,7 @@ local CommandBuilder = {
 			command = java(),
 			args = {
 				"-Dspring.config.additional-location=" .. table.concat(self._spring_property_filepaths, ","),
+				string.format("-javaagent:%s/tools/java-extensions/jmockit/jmockit.jar", os.getenv("HOME")),
 				"-jar",
 				self._junit_jar,
 				"execute",
@@ -124,6 +126,9 @@ local CommandBuilder = {
 				"--fail-if-no-tests",
 				"--disable-banner",
 				"--details=testfeed",
+				-- "--include-classname=^(Test.*|.+[.$]Test.*|.*Tests?|I[Tt].*|.+[.$]I[Tt].*|.*I[Tt]?)$",
+				-- "--include-classname=^(Test.*|.+[.$]Test.*|.*Tests?)$",
+				'--include-classname="^(Test.*|.+[.$]Test.*|.*Tests?|I[Tt].*|.+[.$]I[Tt].*|.*I[Tt]?)$"',
 				"--config=junit.platform.output.capture.stdout=true",
 			},
 		}
@@ -131,6 +136,7 @@ local CommandBuilder = {
 		for _, v in ipairs(selectors) do
 			table.insert(junit_command.args, v)
 		end
+		-- dd({ selectors = selectors })
 
 		-- add debug arguments if debug port is specified
 		if port then
@@ -138,10 +144,12 @@ local CommandBuilder = {
 			table.insert(
 				junit_command.args,
 				1,
-				"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0.0.0.0:" .. port
+				-- "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0.0.0.0:" .. port
+				"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" .. port
 			)
 		end
 
+		-- dd(junit_command)
 		return junit_command
 	end,
 
