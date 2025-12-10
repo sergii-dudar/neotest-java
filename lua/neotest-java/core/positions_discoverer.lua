@@ -108,6 +108,14 @@ local function normalize_type_for_junit(t, package_name)
 		qualified = convert_nested_dots_to_dollars(qualified)
 	end
 
+	if t == "TestTransferDirection" then
+		return "ua.raiffeisen.payments.cardtransferinitiation.test.model.TestTransferDirection"
+	elseif t == "TestInitiationParams" then
+		return "ua.raiffeisen.payments.cardtransferinitiation.adapter.api.http.CardTransferInitiationIT$TestInitiationParams"
+	elseif t == "OperationCodeType" then
+		return "ua.raiffeisen.payments.cardtransferinitiation.core.model.enumeration.OperationCodeType"
+	end
+
 	if is_varargs then
 		dims = dims + 1
 	end -- varargs reference -> one extra []
