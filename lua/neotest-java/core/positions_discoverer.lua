@@ -114,6 +114,10 @@ local function normalize_type_for_junit(t, package_name)
 		return "ua.raiffeisen.payments.cardtransferinitiation.adapter.api.http.CardTransferInitiationIT$TestInitiationParams"
 	elseif t == "OperationCodeType" then
 		return "ua.raiffeisen.payments.cardtransferinitiation.core.model.enumeration.OperationCodeType"
+	elseif t == "TestEnum" then
+		return "ua.serhii.application.model.TestEnum"
+	elseif t == "TestMonth" then
+		return "ua.serhii.application.Something1Test$TestMonth"
 	end
 
 	if is_varargs then
