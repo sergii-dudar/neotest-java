@@ -106,7 +106,6 @@ function SpecBuilder.build_spec(args, project_type, config)
 
 	-- NORMAL STRATEGY
 	logger.info("junit command: ", command:build_to_string())
-	-- dd({ cmd = command:build_to_string() })
 	return {
 		command = command:build_to_string(),
 		cwd = root,
