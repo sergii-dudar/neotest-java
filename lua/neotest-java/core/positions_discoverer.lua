@@ -101,14 +101,15 @@ local function normalize_type_for_junit(t, package_name)
 		elseif java_util[t] then
 			qualified = "java.util." .. t
 		elseif package_name and package_name ~= "" then
-			qualified = package_name .. "." .. t
+			-- qualified = package_name .. "." .. t
+			qualified = string.format("jdtls:{{%s}}||default:{{%s}}", t, package_name .. "." .. t)
 		else
-			qualified = t
+			qualified = string.format("jdtls:{{%s}}||default:{{%s}}", t, t)
 		end
 		qualified = convert_nested_dots_to_dollars(qualified)
 	end
 
-	if t == "TestTransferDirection" then
+	--[[ if t == "TestTransferDirection" then
 		return "ua.raiffeisen.payments.cardtransferinitiation.test.model.TestTransferDirection"
 	elseif t == "TestInitiationParams" then
 		return "ua.raiffeisen.payments.cardtransferinitiation.adapter.api.http.CardTransferInitiationIT$TestInitiationParams"
@@ -118,7 +119,7 @@ local function normalize_type_for_junit(t, package_name)
 		return "ua.serhii.application.model.TestEnum"
 	elseif t == "TestMonth" then
 		return "ua.serhii.application.Something1Test$TestMonth"
-	end
+	end ]]
 
 	if is_varargs then
 		dims = dims + 1

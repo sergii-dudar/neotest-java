@@ -1,6 +1,7 @@
 local binaries = require("neotest-java.command.binaries")
 local java = binaries.java
 local logger = require("neotest-java.logger")
+local neotest_java_util = require("utils.java.neotest-java-util") -- NOTE: custom util, not in neotest-java package!
 
 --- @class CommandBuilder
 local CommandBuilder = {
@@ -96,13 +97,35 @@ local CommandBuilder = {
 		assert(self._classpath_file_arg, "classpath_file_arg cannot be nil")
 		assert(self._spring_property_filepaths, "_spring_property_filepaths cannot be nil")
 
-		dd(self)
+		-- local lsp_util = require("utils.lsp-util")
+		-- local jdtls_client = lsp_util.get_client_by_name("jdtls")
+		-- dd(jdtls_client)
+		-- local response = jdtls_client:request_sync("workspace/symbol", { query = "TestMonth" }, 3000)
+		-- dd(response)
+
+		--[[ local jdtls_client = require("nio").lsp.get_clients({ name = "jdtls" })[1]
+		dd(jdtls_client)
+		local err, result = jdtls_client.request.workspace_symbol({ query = "TestMonth" })
+		dd({ err = err, result = result }) ]]
+
+		-- dd(self)
 		local selectors = {}
 		for _, v in ipairs(self._test_references) do
 			if v.type == "test" then
+				--[[ {
+  method_name = "ua.serhii.application.Something1Test#someMonths_scv(jdtls:{{TestEnum}}||default:{{ua.serhii.application.TestEnum}})",
+  qualified_name = "ua.serhii.application.Something1Test#someMonths_scv(jdtls:{{TestEnum}}||default:{{ua.serhii.application.TestEnum}})",
+  type = "test"
+} ]]
+
+				v.qualified_name = neotest_java_util.parse_and_resolve_method_params_nio(v.qualified_name)
+
+				-- dd({ qualified_name = v.qualified_name })
 				local class_name = v.qualified_name:match("^(.-)#") or v.qualified_name
 				table.insert(selectors, "--select-class='" .. class_name .. "'")
 				if v.method_name then
+					v.method_name = neotest_java_util.parse_and_resolve_method_params_nio(v.method_name)
+					-- dd({ method_name = v.method_name })
 					table.insert(selectors, "--select-method='" .. v.method_name .. "'")
 				end
 			elseif v.type == "file" then
