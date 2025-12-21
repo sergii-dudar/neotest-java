@@ -15,11 +15,24 @@
         ]
       }
     ],
-    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            {
+              "type": "refactor",
+              "section": "Refactors"
+            }
+          ]
+        }
+      }
+    ],
     [
       "@semantic-release/github",
       {
-        "successComment": false
+        "successCommentCondition": false
       }
     ]
   ]

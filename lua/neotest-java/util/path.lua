@@ -2,6 +2,26 @@
 --- @field to_string fun(): string
 --- @field parent fun(): neotest-java.Path
 --- @field append fun(other: string): neotest-java.Path
+--- @field name fun(): string
+--- @field make_relative fun(other: neotest-java.Path): neotest-java.Path
+--- @field contains fun(slug_term: string): boolean
+
+local PATH_METATABLE = {
+	__tostring = function(path)
+		return path.to_string()
+	end,
+
+	--- @param path1 neotest-java.Path
+	--- @param path2 neotest-java.Path
+	__eq = function(path1, path2)
+		print("Comparing paths:", path1:to_string(), path2:to_string())
+		-- check if both are actually tables to avoid errors
+		if type(path1) ~= "table" or type(path2) ~= "table" then
+			return false
+		end
+		return path1.to_string() == path2.to_string()
+	end,
+}
 
 local UNIX_SEPARATOR = "/"
 local WINDOWS_SEPARATOR = "\\"
@@ -59,24 +79,43 @@ local function Path(raw_path, opts)
 	if has_relative_dot then
 		table.insert(slugs, 1, ".")
 	end
+	local to_string = function()
+		if is_absolute and #slugs == 1 then
+			return SEP
+		end
+		return vim.iter(slugs):join(SEP)
+	end
 
-	return {
-		append = function(other)
-			return Path(raw_path .. SEP .. other, opts)
-		end,
-		parent = function()
-			if is_absolute and #slugs == 2 then
-				return Path(SEP, opts)
-			end
-			return Path(vim.iter(slugs):take(#slugs - 1):join(SEP), opts)
-		end,
-		to_string = function()
-			if is_absolute and #slugs == 1 then
-				return SEP
-			end
-			return vim.iter(slugs):join(SEP)
-		end,
-	}
+	return setmetatable(
+		--- @type neotest-java.Path
+		{
+			name = function()
+				return slugs[#slugs]
+			end,
+			append = function(other)
+				return Path(raw_path .. SEP .. other, opts)
+			end,
+			parent = function()
+				if is_absolute and #slugs == 2 then
+					return Path(SEP, opts)
+				end
+				return Path(vim.iter(slugs):take(#slugs - 1):join(SEP), opts)
+			end,
+			make_relative = function(base_path)
+				local this_string = to_string()
+				local base_path_string = base_path.to_string()
+
+				return Path(this_string:sub(#base_path_string + 2), opts)
+			end,
+			contains = function(slug_term)
+				return vim.iter(slugs):any(function(slug)
+					return slug == slug_term
+				end)
+			end,
+			to_string = to_string,
+		},
+		PATH_METATABLE
+	)
 end
 
 return Path

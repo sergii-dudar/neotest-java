@@ -4,8 +4,11 @@ local logger = require("neotest-java.logger")
 local neotest_java_util = require("utils.java.neotest-java-util") -- NOTE: custom util, not in neotest-java package!
 
 --- @class CommandBuilder
+--- @field _junit_jar neotest-java.Path
+--- @field _reports_dir neotest-java.Path
 local CommandBuilder = {
 
+	--- @param config neotest-java.ConfigOpts
 	--- @return CommandBuilder
 	new = function(self, config, project_type)
 		self.__index = self
@@ -71,6 +74,8 @@ local CommandBuilder = {
 		return method_names
 	end,
 
+	--- @param self CommandBuilder
+	--- @param reports_dir neotest-java.Path
 	reports_dir = function(self, reports_dir)
 		self._reports_dir = reports_dir
 	end,
@@ -78,17 +83,21 @@ local CommandBuilder = {
 	basedir = function(self, basedir)
 		logger.debug("assigned basedir: " .. basedir)
 		self._basedir = basedir
+		return self
 	end,
 
 	classpath_file_arg = function(self, classpath_file_arg)
 		self._classpath_file_arg = classpath_file_arg
+		return self
 	end,
 
 	--- @param property_filepaths string[]
 	spring_property_filepaths = function(self, property_filepaths)
 		self._spring_property_filepaths = property_filepaths
+		return self
 	end,
 
+	--- @param self CommandBuilder
 	--- @param port? number
 	--- @return { command: string, args: string[] }
 	build_junit = function(self, port)
@@ -126,10 +135,10 @@ local CommandBuilder = {
 				"-Dspring.config.additional-location=" .. table.concat(self._spring_property_filepaths, ","),
 				string.format("-javaagent:%s/tools/java-extensions/jmockit/jmockit.jar", os.getenv("HOME")),
 				"-jar",
-				self._junit_jar,
+				self._junit_jar.to_string(),
 				"execute",
 				"--classpath=" .. self._classpath_file_arg,
-				"--reports-dir=" .. self._reports_dir,
+				"--reports-dir=" .. self._reports_dir.to_string(),
 				"--fail-if-no-tests",
 				"--disable-banner",
 				"--details=testfeed",

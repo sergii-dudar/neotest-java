@@ -3,12 +3,13 @@ local async = require("nio").tests
 local plugin = require("neotest-java")
 local result_builder = require("neotest-java.core.result_builder")
 local tempname_fn = require("nio").fn.tempname
+local Path = require("neotest-java.util.path")
 
 local current_dir = vim.fn.fnamemodify(vim.fn.expand("%:p:h"), ":p")
 
 local TEMPDIR = os.getenv("TEMP") or os.getenv("TMP") or vim.uv.os_tmpdir()
 local TEMPNAME = TEMPDIR .. "/neotest-java-result-builder-test.txt"
-local MAVEN_REPORTS_DIR = vim.loop.cwd() .. "/tests/fixtures/maven-demo/target/surefire-reports/"
+local MAVEN_REPORTS_DIR = Path(vim.loop.cwd()).append("/tests/fixtures/maven-demo/target/surefire-reports/")
 
 local SUCCESSFUL_RESULT = {
 	code = 0,
@@ -54,7 +55,10 @@ describe("ResultBuilder", function()
 
 	async.it("throws error when no report files found", function()
 		--given
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return {}
 		end
 
@@ -70,7 +74,10 @@ describe("ResultBuilder", function()
 
 	async.it("ignores report file when cannot be read", function()
 		--given
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return { "TEST-someTest.xml" }
 		end
 		local read_file = function()
@@ -131,7 +138,10 @@ describe("ResultBuilder", function()
 
 		local file_path = create_tempfile_with_test(file_content)
 		local tree = plugin.discover_positions(file_path)
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return { file_path }
 		end
 		local read_file = function()
@@ -199,7 +209,10 @@ describe("ResultBuilder", function()
 
 		local file_path = create_tempfile_with_test(file_content)
 		local tree = plugin.discover_positions(file_path)
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return { file_path }
 		end
 		local read_file = function()
@@ -265,7 +278,10 @@ describe("ResultBuilder", function()
 		}
 
 		local tree = plugin.discover_positions(file_path)
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return { file_path }
 		end
 		local read_file = function()
@@ -338,7 +354,10 @@ describe("ResultBuilder", function()
 		local file_path = create_tempfile_with_test(file_content)
 
 		local tree = plugin.discover_positions(file_path)
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return { file_path }
 		end
 		local read_file = function()
@@ -417,7 +436,10 @@ describe("ResultBuilder", function()
 		local file_path = create_tempfile_with_test(file_content)
 
 		local tree = plugin.discover_positions(file_path)
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return { file_path }
 		end
 		local read_file = function()
@@ -489,7 +511,10 @@ describe("ResultBuilder", function()
 		local file_path = create_tempfile_with_test(file_content)
 
 		local tree = plugin.discover_positions(file_path)
-		local scan_dir = function()
+		local scan_dir = function(dir)
+			if dir ~= DEFAULT_SPEC.context.reports_dir.to_string() then
+				error("should scan in spec.context.reports_dir")
+			end
 			return { file_path }
 		end
 		local read_file = function()

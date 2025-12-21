@@ -15,6 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        nvim-version: [stable, nightly]
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -22,9 +23,15 @@ jobs:
       - uses: rhysd/action-setup-vim@v1
         with:
           neovim: true
+          version: ${{ matrix.nvim-version }}
+
+      - name: Make install
+        run: make install
+        timeout-minutes: 2
 
       - name: Run tests
         run: make test
+        timeout-minutes: 1
 
   release:
     if: github.ref == 'refs/heads/main'
@@ -45,7 +52,9 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: npx -p @semantic-release/release-notes-generator -p conventional-changelog-conventionalcommits semantic-release
   push-to-luarocks:
     needs: release
     uses: ./.github/workflows/luarocks.yml
+    secrets:
+      LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
