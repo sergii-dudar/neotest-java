@@ -1,5 +1,6 @@
 local binaries = require("neotest-java.command.binaries")
 local java = binaries.java
+local neotest_java_util = require("utils.java.neotest-java-util") -- NOTE: custom util, not in neotest-java package!
 
 --- @class neotest-java.TestReference
 --- @field qualified_name string
@@ -67,15 +68,27 @@ CommandBuilder.build_junit = function(self, port)
 	assert(self._classpath_file_arg, "classpath_file_arg cannot be nil")
 	assert(self._spring_property_filepaths, "_spring_property_filepaths cannot be nil")
 
+    --[[ local jdtls_client = require("nio").lsp.get_clients({ name = "jdtls" })[1]
+    dd(jdtls_client)
+    local err, result = jdtls_client.request.workspace_symbol({ query = "TestMonth" })
+    dd({ err = err, result = result }) ]]
+
 	local selectors = {}
 	for _, v in ipairs(self._test_references) do
-		if v.type == "test" then
-			local class_name = v.qualified_name:match("^(.-)#") or v.qualified_name
-			table.insert(selectors, "--select-class='" .. class_name .. "'")
-			if v.method_name then
-				table.insert(selectors, "--select-method='" .. v.method_name .. "'")
-			end
-		end
+        if v.type == "test" then
+            v.qualified_name = neotest_java_util.parse_and_resolve_method_params_nio(v.qualified_name)
+            local class_name = v.qualified_name:match("^(.-)#") or v.qualified_name
+            table.insert(selectors, "--select-class='" .. class_name .. "'")
+            if v.method_name then
+                v.method_name = neotest_java_util.parse_and_resolve_method_params_nio(v.method_name)
+                table.insert(selectors, "--select-method='" .. v.method_name .. "'")
+            end
+        elseif v.type == "file" then
+            table.insert(selectors, "-c=" .. v.qualified_name)
+        elseif v.type == "dir" then
+            table.insert(selectors, "-p=" .. v.qualified_name)
+        end
+
 	end
 	assert(#selectors ~= 0, "junit command has to have a selector")
 
@@ -83,6 +96,7 @@ CommandBuilder.build_junit = function(self, port)
 		command = java(),
 		args = {
 			"-Dspring.config.additional-location=" .. table.concat(self._spring_property_filepaths, ","),
+			string.format("-javaagent:%s/tools/java-extensions/jmockit/jmockit.jar", os.getenv("HOME")),
 			"-jar",
 			self._junit_jar.to_string(),
 			"execute",
@@ -91,6 +105,7 @@ CommandBuilder.build_junit = function(self, port)
 			"--fail-if-no-tests",
 			"--disable-banner",
 			"--details=testfeed",
+			"--include-classname="^(Test.*|.+[.$]Test.*|.*Tests?|I[Tt].*|.+[.$]I[Tt].*|.*I[Tt]?)$",
 			"--config=junit.platform.output.capture.stdout=true",
 		},
 	}
