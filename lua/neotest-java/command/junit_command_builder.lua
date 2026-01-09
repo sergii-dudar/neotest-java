@@ -98,7 +98,7 @@ CommandBuilder.build_junit = function(self, port)
 	local selectors = {}
 	for _, v in ipairs(self._test_references) do
 		if v.type == "method" then
-			table.insert(selectors, "--select-method='" .. v.qualified_name .. "'")
+	        table.insert(selectors, "--select-method='" .. require("utils.java.neotest-java-util").resolve_parametrized_method_signature_nio(v.qualified_name, self._classpath_file_arg) .. "'")
 		else
 			table.insert(selectors, "--select-class='" .. v.qualified_name .. "'")
 		end
