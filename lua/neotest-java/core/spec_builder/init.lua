@@ -5,6 +5,7 @@ local logger = require("neotest-java.logger")
 local random_port = require("neotest-java.util.random_port")
 local Project = require("neotest-java.model.project")
 local Path = require("neotest-java.model.path")
+local pom_parser = require("neotest-java.util.pom_parser")
 
 --- @class neotest-java.BuildSpecDependencies
 --- @field mkdir fun(dir: neotest-java.Path)
@@ -104,7 +105,18 @@ local SpecBuilder = function(deps)
 				logger.debug("junit debug command: ", junit.command, " ", table.concat(junit.args, " "))
 				local terminated_command_event = deps.launch_debug_test(junit.command, junit.args, module.base_dir)
 
+				-- Get project name from Maven artifactId for Maven projects
 				local project_name = root:name()
+				if vim.fn.filereadable(root:append("pom.xml"):to_string()) == 1 then
+					local artifact_id = pom_parser.get_artifact_id(root:to_string())
+					if artifact_id then
+						project_name = artifact_id
+						logger.debug("Using Maven artifactId as projectName: " .. project_name)
+					else
+						logger.warn("Could not get artifactId from Maven, using directory name: " .. project_name)
+					end
+				end
+				
 				return {
 					strategy = {
 						type = "java",
