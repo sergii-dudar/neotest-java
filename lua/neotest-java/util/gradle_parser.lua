@@ -6,8 +6,6 @@ local M = {}
 function M.get_project_name(project_dir)
 	-- Strategy 1: Try gradle command (most reliable but slow)
 	local gradle_result = M.get_project_name_from_gradle(project_dir)
-	dd({ gradle_result })
-	dd({ M.get_project_name_from_path(project_dir) })
 
 	if gradle_result then
 		return gradle_result
