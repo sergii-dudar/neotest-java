@@ -49,7 +49,7 @@ function M.get_project_name_from_gradle(project_dir)
 end
 
 ---@param project_dir string
----@return string
+---@return string|nil
 function M.get_project_name_from_path(project_dir)
 	-- Extract the last component of the path (directory name)
 	-- This is what Gradle uses for submodule names by default
@@ -60,7 +60,7 @@ function M.get_project_name_from_path(project_dir)
 	end
 
 	-- Fallback to the full path if we can't extract the name
-	return project_dir
+	return nil
 end
 
 return M
