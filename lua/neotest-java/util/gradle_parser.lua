@@ -59,7 +59,6 @@ function M.get_project_name_from_path(project_dir)
 		return name
 	end
 
-	-- Fallback to the full path if we can't extract the name
 	return nil
 end
 
